@@ -16,6 +16,50 @@ namespace OracleProject
         {
             _currentUser = username;
             InitializeComponent();
+            pageOverview.Resize += pageOverview_Resize;
+            LayoutOverviewCards();
+        }
+
+        private void pageOverview_Resize(object sender, EventArgs e)
+        {
+            LayoutOverviewCards();
+        }
+
+        private void LayoutOverviewCards()
+        {
+            const int outerMargin = 20;
+            const int gap = 20;
+            const int cardCount = 4;
+
+            int availableWidth = pageOverview.ClientSize.Width
+                - (outerMargin * 2)
+                - (gap * (cardCount - 1));
+
+            if (availableWidth <= 0)
+                return;
+
+            int cardWidth = availableWidth / cardCount;
+            Panel[] cards = { cardPanel1, cardPanel2, cardPanel3, cardPanel4 };
+            Panel[] accents = { panelCard1Accent, panelCard2Accent, panelCard3Accent, panelCard4Accent };
+            Label[] titles = { lblCard1Title, lblCard2Title, lblCard3Title, lblCard4Title };
+            Label[] values = { lblCard1Value, lblCard2Value, lblCard3Value, lblCard4Value };
+            Label[] subtitles = { lblCard1Sub, lblCard2Sub, lblCard3Sub, lblCard4Sub };
+
+            for (int i = 0; i < cards.Length; i++)
+            {
+                int left = outerMargin + (i * (cardWidth + gap));
+                int width = i == cards.Length - 1
+                    ? pageOverview.ClientSize.Width - outerMargin - left
+                    : cardWidth;
+
+                cards[i].SetBounds(left, outerMargin, width, cards[i].Height);
+                accents[i].Height = cards[i].ClientSize.Height;
+
+                int labelWidth = Math.Max(0, width - 30);
+                titles[i].Width = labelWidth;
+                values[i].Width = labelWidth;
+                subtitles[i].Width = labelWidth;
+            }
         }
 
         private void Dashboard_Load(object sender, EventArgs e)
@@ -851,6 +895,11 @@ namespace OracleProject
             DateTime parsed;
             if (value != null && DateTime.TryParse(Convert.ToString(value), out parsed))
                 picker.Value = parsed;
+        }
+
+        private void lblCard1Value_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

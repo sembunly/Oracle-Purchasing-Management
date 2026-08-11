@@ -14,6 +14,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <StartupObject>OracleProject.Program</StartupObject>
+    <RuntimeIdentifiers>win</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,10 +49,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Oracle.ManagedDataAccess">
-      <HintPath>$(USERPROFILE)\.nuget\packages\oracle.manageddataaccess\23.26.200\lib\net472\Oracle.ManagedDataAccess.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Oracle.ManagedDataAccess" Version="23.26.200" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\OracleDb.cs" />
@@ -152,11 +152,4 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
-  <!-- Keep the runtime connection string in the executable config when this
-       legacy project is built outside Visual Studio/MSBuild IDE targets. -->
-  <Target Name="CopyRuntimeAppConfig" AfterTargets="Build">
-    <Copy SourceFiles="$(ProjectDir)App.config"
-          DestinationFiles="$(TargetPath).config"
-          SkipUnchangedFiles="false" />
-  </Target>
 </Project>

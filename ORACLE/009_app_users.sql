@@ -122,6 +122,7 @@ VALUES
 COMMIT;
 
 PROMPT ===== Application users created =====
+
 SELECT username, role_code, status
 FROM app_users
 ORDER BY user_id;
