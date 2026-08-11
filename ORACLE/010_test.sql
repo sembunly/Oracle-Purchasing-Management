@@ -15,10 +15,14 @@ PROMPT ===== Row counts for every module =====
 SELECT 'PRODUCTS' AS module_name, COUNT(*) AS row_count FROM products
 UNION ALL SELECT 'SUPPLIERS', COUNT(*) FROM suppliers
 UNION ALL SELECT 'PURCHASE REQUESTS', COUNT(*) FROM purchase_requests
+UNION ALL SELECT 'REQUEST ITEMS', COUNT(*) FROM purchase_request_items
 UNION ALL SELECT 'APPROVALS', COUNT(*) FROM purchase_request_approvals
 UNION ALL SELECT 'QUOTATIONS', COUNT(*) FROM quotations
+UNION ALL SELECT 'QUOTATION ITEMS', COUNT(*) FROM quotation_items
 UNION ALL SELECT 'PURCHASE ORDERS', COUNT(*) FROM purchase_orders
+UNION ALL SELECT 'PURCHASE ORDER ITEMS', COUNT(*) FROM purchase_order_items
 UNION ALL SELECT 'GOODS RECEIPTS', COUNT(*) FROM goods_receipts
+UNION ALL SELECT 'GOODS RECEIPT ITEMS', COUNT(*) FROM goods_receipt_items
 UNION ALL SELECT 'SUPPLIER INVOICES', COUNT(*) FROM supplier_invoices
 UNION ALL SELECT 'PAYMENTS', COUNT(*) FROM payments;
 
@@ -86,3 +90,31 @@ END;
 SELECT COUNT(*) AS rollback_test_rows
   FROM purchase_orders
  WHERE po_no = 'PO-ROLLBACK-TEST';
+
+PROMPT ===== Soft delete test: status changes to 0, row remains =====
+DECLARE
+    v_quote_item_id quotation_items.quotation_item_id%TYPE;
+    v_status        quotation_items.status%TYPE;
+    v_row_count     NUMBER;
+BEGIN
+    SAVEPOINT before_soft_delete_test;
+
+    SELECT MIN(quotation_item_id)
+      INTO v_quote_item_id
+      FROM quotation_items;
+
+    sp_soft_delete('QUOTATION_ITEMS', v_quote_item_id);
+
+    SELECT status, COUNT(*)
+      INTO v_status, v_row_count
+      FROM quotation_items
+     WHERE quotation_item_id = v_quote_item_id
+     GROUP BY status;
+
+    DBMS_OUTPUT.PUT_LINE('Soft-deleted quotation item ID ' || v_quote_item_id ||
+                         ', status=' || v_status ||
+                         ', row count=' || v_row_count);
+
+    ROLLBACK TO before_soft_delete_test;
+END;
+/

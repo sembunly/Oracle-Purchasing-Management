@@ -67,6 +67,9 @@
     <Compile Include="GUI\LoginForm.Designer.cs">
       <DependentUpon>LoginForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\PermissionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="GUI\NewOrderForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
@@ -47,13 +48,15 @@ namespace OracleProject
             try
             {
                 DataTable app_users = Query(@"
-                    SELECT e.full_name, u.role_code
+                    SELECT e.full_name, r.role_code
                     FROM app_users u
                     JOIN employees e ON e.employee_id = u.employee_id
+                    JOIN app_roles r ON r.role_id = u.role_id
                     WHERE UPPER(u.username) = UPPER(:username)
                       AND u.password_hash = RAWTOHEX(STANDARD_HASH(:password, 'SHA256'))
                       AND u.status = 1
-                      AND e.status = 1",
+                      AND e.status = 1
+                      AND r.status = 1",
                     VarcharParameter("username", username),
                     VarcharParameter("password", password));
 
@@ -64,13 +67,13 @@ namespace OracleProject
                 }
 
                 displayName = Convert.ToString(app_users.Rows[0]["FULL_NAME"]);
-                roleCode = Convert.ToString(app_users.Rows[0]["ROLE_CODE"]);
+                roleCode = Convert.ToString(app_users.Rows[0]["ROLE_CODE"]).ToUpperInvariant();
                 error = null;
                 return true;
             }
             catch (OracleException ex) when (ex.Number == 942)
             {
-                error = "APP_USERS or EMPLOYEES table was not found. Run 009_app_users.sql as PURCHASING_USER.";
+                error = "APP_USERS or EMPLOYEES table was not found.";
                 return false;
             }
             catch (Exception ex)
@@ -79,6 +82,24 @@ namespace OracleProject
                 return false;
             }
         }
+
+        internal static HashSet<string> GetAllowedPermissions(string roleCode)
+        {
+            var permissions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            DataTable rows = Query(@"
+                SELECT permission_code
+                  FROM vw_app_role_permissions
+                 WHERE UPPER(role_code) = UPPER(:roleCode)
+                   AND is_allowed = 1",
+                Parameter("roleCode", roleCode));
+
+            foreach (DataRow row in rows.Rows)
+                permissions.Add(Convert.ToString(row["PERMISSION_CODE"]));
+
+            return permissions;
+        }
+
         internal static bool TestConnection(out string error)
         {
             try

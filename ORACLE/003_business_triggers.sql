@@ -8,6 +8,7 @@ BEGIN
            SELECT NVL(SUM(qi.subtotal), 0)
              FROM quotation_items qi
             WHERE qi.quotation_id = q.quotation_id
+              AND qi.status = 1
        );
 END;
 /
@@ -20,11 +21,13 @@ BEGIN
                SELECT NVL(SUM(poi.subtotal), 0)
                  FROM purchase_order_items poi
                 WHERE poi.po_id = po.po_id
+                  AND poi.status = 1
            ),
            total_amount = (
                SELECT NVL(SUM(poi.subtotal), 0)
                  FROM purchase_order_items poi
                 WHERE poi.po_id = po.po_id
+                  AND poi.status = 1
            ) + po.tax_amount;
 END;
 /

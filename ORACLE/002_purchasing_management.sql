@@ -75,6 +75,7 @@ CREATE TABLE purchase_request_items (
     product_id            NUMBER NOT NULL,
     quantity              NUMBER(12,2) NOT NULL,
     estimated_unit_price  NUMBER(12,2) DEFAULT 0 NOT NULL,
+    status                NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     notes                 VARCHAR2(255),
     CONSTRAINT fk_pr_item_request FOREIGN KEY (request_id)
         REFERENCES purchase_requests (request_id),
@@ -82,7 +83,8 @@ CREATE TABLE purchase_request_items (
         REFERENCES products (product_id),
     CONSTRAINT uk_pr_item_product UNIQUE (request_id, product_id),
     CONSTRAINT ck_pr_item_qty CHECK (quantity > 0),
-    CONSTRAINT ck_pr_item_price CHECK (estimated_unit_price >= 0)
+    CONSTRAINT ck_pr_item_price CHECK (estimated_unit_price >= 0),
+    CONSTRAINT ck_pr_item_status CHECK (status IN (0, 1))
 );
 
 CREATE TABLE purchase_request_approvals (
@@ -91,6 +93,7 @@ CREATE TABLE purchase_request_approvals (
     approval_level   NUMBER(3) DEFAULT 1 NOT NULL,
     approver_id      NUMBER NOT NULL,
     decision         NUMBER(1) DEFAULT 0 NOT NULL, -- 0: PENDING, 1: APPROVED, 2: REJECTED
+    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     comments         VARCHAR2(500),
     decision_date    DATE,
     created_at       DATE DEFAULT SYSDATE NOT NULL,
@@ -103,6 +106,7 @@ CREATE TABLE purchase_request_approvals (
     CONSTRAINT ck_approval_decision CHECK (
         decision IN (0, 1, 2)
     ),
+    CONSTRAINT ck_approval_status CHECK (status IN (0, 1)),
     CONSTRAINT ck_approval_date CHECK (
         (decision = 0 AND decision_date IS NULL)
         OR (decision IN (1, 2) AND decision_date IS NOT NULL)
@@ -141,6 +145,7 @@ CREATE TABLE quotation_items (
     product_id         NUMBER NOT NULL,
     quantity           NUMBER(12,2) NOT NULL,
     unit_price         NUMBER(12,2) NOT NULL,
+    status             NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     subtotal           NUMBER(14,2)
         GENERATED ALWAYS AS (quantity * unit_price) VIRTUAL,
     CONSTRAINT fk_quote_item_quote FOREIGN KEY (quotation_id)
@@ -149,7 +154,8 @@ CREATE TABLE quotation_items (
         REFERENCES products (product_id),
     CONSTRAINT uk_quote_item_product UNIQUE (quotation_id, product_id),
     CONSTRAINT ck_quote_item_qty CHECK (quantity > 0),
-    CONSTRAINT ck_quote_item_price CHECK (unit_price >= 0)
+    CONSTRAINT ck_quote_item_price CHECK (unit_price >= 0),
+    CONSTRAINT ck_quote_item_status CHECK (status IN (0, 1))
 );
 
 CREATE TABLE purchase_orders (
@@ -199,6 +205,7 @@ CREATE TABLE purchase_order_items (
     product_id       NUMBER NOT NULL,
     quantity         NUMBER(12,2) NOT NULL,
     unit_price       NUMBER(12,2) NOT NULL,
+    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     subtotal         NUMBER(14,2)
         GENERATED ALWAYS AS (quantity * unit_price) VIRTUAL,
     CONSTRAINT fk_po_item_po FOREIGN KEY (po_id)
@@ -207,7 +214,8 @@ CREATE TABLE purchase_order_items (
         REFERENCES products (product_id),
     CONSTRAINT uk_po_item_product UNIQUE (po_id, product_id),
     CONSTRAINT ck_po_item_qty CHECK (quantity > 0),
-    CONSTRAINT ck_po_item_price CHECK (unit_price >= 0)
+    CONSTRAINT ck_po_item_price CHECK (unit_price >= 0),
+    CONSTRAINT ck_po_item_status CHECK (status IN (0, 1))
 );
 
 CREATE TABLE goods_receipts (
@@ -235,6 +243,7 @@ CREATE TABLE goods_receipt_items (
     product_id       NUMBER NOT NULL,
     received_qty     NUMBER(12,2) NOT NULL,
     rejected_qty     NUMBER(12,2) DEFAULT 0 NOT NULL,
+    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     notes            VARCHAR2(255),
     CONSTRAINT fk_receipt_item_receipt FOREIGN KEY (receipt_id)
         REFERENCES goods_receipts (receipt_id),
@@ -242,6 +251,7 @@ CREATE TABLE goods_receipt_items (
         REFERENCES products (product_id),
     CONSTRAINT uk_receipt_item_product UNIQUE (receipt_id, product_id),
     CONSTRAINT ck_receipt_item_qty CHECK (received_qty > 0),
+    CONSTRAINT ck_receipt_item_status CHECK (status IN (0, 1)),
     CONSTRAINT ck_receipt_rejected_qty CHECK (
         rejected_qty >= 0 AND rejected_qty <= received_qty
     )
@@ -320,18 +330,23 @@ CREATE SEQUENCE payment_seq        START WITH 1 INCREMENT BY 1 NOCYCLE;
 CREATE INDEX ix_product_supplier       ON products (preferred_supplier_id);
 CREATE INDEX ix_request_employee       ON purchase_requests (requested_by);
 CREATE INDEX ix_pr_item_product        ON purchase_request_items (product_id);
+CREATE INDEX ix_pr_item_status         ON purchase_request_items (status);
 CREATE INDEX ix_approval_approver      ON purchase_request_approvals (approver_id);
+CREATE INDEX ix_approval_status        ON purchase_request_approvals (status);
 CREATE INDEX ix_quotation_supplier     ON quotations (supplier_id);
 CREATE UNIQUE INDEX uk_selected_quote_per_request
     ON quotations (
         CASE WHEN status = 1 THEN request_id ELSE NULL END
     );
 CREATE INDEX ix_quote_item_product     ON quotation_items (product_id);
+CREATE INDEX ix_quote_item_status      ON quotation_items (status);
 CREATE INDEX ix_po_request             ON purchase_orders (request_id);
 CREATE INDEX ix_po_supplier            ON purchase_orders (supplier_id);
 CREATE INDEX ix_po_item_product        ON purchase_order_items (product_id);
+CREATE INDEX ix_po_item_status         ON purchase_order_items (status);
 CREATE INDEX ix_receipt_po             ON goods_receipts (po_id);
 CREATE INDEX ix_receipt_item_product   ON goods_receipt_items (product_id);
+CREATE INDEX ix_receipt_item_status    ON goods_receipt_items (status);
 CREATE INDEX ix_invoice_po             ON supplier_invoices (po_id);
 CREATE INDEX ix_payment_invoice        ON payments (invoice_id);
 
@@ -340,9 +355,14 @@ COMMENT ON COLUMN employees.status IS '0: INACTIVE, 1: ACTIVE';
 COMMENT ON COLUMN suppliers.status IS '0: INACTIVE, 1: ACTIVE';
 COMMENT ON COLUMN products.status IS '0: INACTIVE, 1: ACTIVE';
 COMMENT ON COLUMN purchase_requests.status IS '0: DRAFT, 1: PENDING, 2: APPROVED, 3: REJECTED, 4: CANCELLED';
+COMMENT ON COLUMN purchase_request_items.status IS '0: INACTIVE/SOFT DELETED, 1: ACTIVE';
 COMMENT ON COLUMN purchase_request_approvals.decision IS '0: PENDING, 1: APPROVED, 2: REJECTED';
+COMMENT ON COLUMN purchase_request_approvals.status IS '0: INACTIVE/SOFT DELETED, 1: ACTIVE';
 COMMENT ON COLUMN quotations.status IS '0: RECEIVED, 1: SELECTED, 2: REJECTED, 3: EXPIRED';
+COMMENT ON COLUMN quotation_items.status IS '0: INACTIVE/SOFT DELETED, 1: ACTIVE';
 COMMENT ON COLUMN purchase_orders.status IS '0: DRAFT, 1: APPROVED, 2: PARTIALLY_RECEIVED, 3: RECEIVED, 4: CANCELLED, 5: CLOSED';
+COMMENT ON COLUMN purchase_order_items.status IS '0: INACTIVE/SOFT DELETED, 1: ACTIVE';
 COMMENT ON COLUMN goods_receipts.status IS '0: DRAFT, 1: RECEIVED, 2: CANCELLED';
+COMMENT ON COLUMN goods_receipt_items.status IS '0: INACTIVE/SOFT DELETED, 1: ACTIVE';
 COMMENT ON COLUMN supplier_invoices.status IS '0: UNPAID, 1: PARTIAL, 2: PAID, 3: CANCELLED';
 COMMENT ON COLUMN payments.status IS '0: PENDING, 1: POSTED, 2: VOID';

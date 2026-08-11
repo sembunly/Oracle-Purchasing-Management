@@ -16,4 +16,5 @@ SELECT
     END AS stock_status
 FROM products p
 LEFT JOIN suppliers s
-  ON s.supplier_id = p.preferred_supplier_id;
+  ON s.supplier_id = p.preferred_supplier_id
+WHERE p.status = 1;

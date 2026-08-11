@@ -17,6 +17,8 @@ GRANT CREATE SESSION,
       CREATE PROCEDURE
 TO purchasing_user;
 
+ALTER SESSION SET "_ORACLE_SCRIPT" = false;
+
 -- Development credentials used by this classroom project:
 -- Username: purchasing_user
 -- Password: 0000

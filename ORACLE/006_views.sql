@@ -32,6 +32,7 @@ LEFT JOIN (
            COUNT(*) AS item_lines,
            SUM(quantity) AS ordered_qty
       FROM purchase_order_items
+     WHERE status = 1
      GROUP BY po_id
 ) items
   ON items.po_id = po.po_id
@@ -42,6 +43,7 @@ LEFT JOIN (
       JOIN goods_receipt_items gri
         ON gri.receipt_id = gr.receipt_id
      WHERE gr.status = 1
+       AND gri.status = 1
      GROUP BY gr.po_id
 ) receipts
   ON receipts.po_id = po.po_id
@@ -74,7 +76,8 @@ JOIN employees requester
   ON requester.employee_id = pr.requested_by
 JOIN employees approver
   ON approver.employee_id = a.approver_id
-WHERE a.decision = 0;
+WHERE a.decision = 0
+  AND a.status = 1;
 
 CREATE OR REPLACE VIEW vw_receiving_report AS
 SELECT
@@ -102,10 +105,12 @@ LEFT JOIN (
       JOIN goods_receipt_items gri
         ON gri.receipt_id = gr.receipt_id
      WHERE gr.status = 1
+       AND gri.status = 1
      GROUP BY gr.po_id, gri.product_id
 ) r
   ON r.po_id = poi.po_id
- AND r.product_id = poi.product_id;
+ AND r.product_id = poi.product_id
+WHERE poi.status = 1;
 
 CREATE OR REPLACE VIEW vw_invoice_payment_report AS
 SELECT

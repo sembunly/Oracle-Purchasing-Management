@@ -33,7 +33,8 @@ BEGIN
            decision_date = SYSDATE
      WHERE request_id = p_request_id
        AND approver_id = p_approver_id
-       AND decision = 0;
+       AND decision = 0
+       AND status = 1;
 
     IF SQL%ROWCOUNT = 0 THEN
         RAISE_APPLICATION_ERROR(-20003, 'No pending approval was assigned to this approver.');
@@ -48,7 +49,8 @@ BEGIN
           INTO v_pending_count
           FROM purchase_request_approvals
          WHERE request_id = p_request_id
-           AND decision = 0;
+           AND decision = 0
+           AND status = 1;
 
         IF v_pending_count = 0 THEN
             UPDATE purchase_requests
@@ -119,7 +121,8 @@ BEGIN
            quantity,
            unit_price
       FROM quotation_items
-     WHERE quotation_id = p_quotation_id;
+     WHERE quotation_id = p_quotation_id
+       AND status = 1;
 
     IF SQL%ROWCOUNT = 0 THEN
         RAISE_APPLICATION_ERROR(-20015, 'Selected quotation has no items.');
@@ -172,5 +175,49 @@ BEGIN
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20024, 'Supplier invoice was not found.');
+END;
+/
+
+CREATE OR REPLACE PROCEDURE sp_soft_delete (
+    p_table_name IN VARCHAR2,
+    p_id         IN NUMBER
+) AS
+    v_table_name VARCHAR2(128);
+    v_sql        VARCHAR2(1000);
+BEGIN
+    v_table_name := UPPER(TRIM(p_table_name));
+
+    CASE v_table_name
+        WHEN 'EMPLOYEES' THEN
+            v_sql := 'UPDATE employees SET status = 0 WHERE employee_id = :id';
+        WHEN 'SUPPLIERS' THEN
+            v_sql := 'UPDATE suppliers SET status = 0 WHERE supplier_id = :id';
+        WHEN 'PRODUCTS' THEN
+            v_sql := 'UPDATE products SET status = 0 WHERE product_id = :id';
+        WHEN 'PURCHASE_REQUEST_ITEMS' THEN
+            v_sql := 'UPDATE purchase_request_items SET status = 0 WHERE request_item_id = :id';
+        WHEN 'PURCHASE_REQUEST_APPROVALS' THEN
+            v_sql := 'UPDATE purchase_request_approvals SET status = 0 WHERE approval_id = :id';
+        WHEN 'QUOTATION_ITEMS' THEN
+            v_sql := 'UPDATE quotation_items SET status = 0 WHERE quotation_item_id = :id';
+        WHEN 'PURCHASE_ORDER_ITEMS' THEN
+            v_sql := 'UPDATE purchase_order_items SET status = 0 WHERE po_item_id = :id';
+        WHEN 'GOODS_RECEIPT_ITEMS' THEN
+            v_sql := 'UPDATE goods_receipt_items SET status = 0 WHERE receipt_item_id = :id';
+        WHEN 'PAYMENTS' THEN
+            v_sql := 'UPDATE payments SET status = 0 WHERE payment_id = :id';
+        ELSE
+            RAISE_APPLICATION_ERROR(
+                -20090,
+                'Soft delete is not allowed for table ' || v_table_name ||
+                '. Use the workflow cancel/reject status for header documents.'
+            );
+    END CASE;
+
+    EXECUTE IMMEDIATE v_sql USING p_id;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        RAISE_APPLICATION_ERROR(-20091, 'No row was found to soft delete.');
+    END IF;
 END;
 /

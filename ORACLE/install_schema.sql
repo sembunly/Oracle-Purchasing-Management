@@ -27,4 +27,7 @@ PROMPT ===== 6. Loading end-to-end sample data =====
 PROMPT ===== 7. Creating application users =====
 @C:\Oracle-Ass\ORACLE\009_app_users.sql
 
+PROMPT ===== 8. Creating application permissions =====
+@C:\Oracle-Ass\ORACLE\011_app_permissions.sql
+
 PROMPT ===== Installer finished. Verify that no ORA- or SP2- errors were printed above. =====

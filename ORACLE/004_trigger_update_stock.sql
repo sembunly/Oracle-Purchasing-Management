@@ -20,6 +20,7 @@ BEGIN
                SUM(received_qty - rejected_qty) AS accepted_qty
           FROM goods_receipt_items
          WHERE receipt_id = :NEW.receipt_id
+           AND status = 1
          GROUP BY product_id
     ) LOOP
         UPDATE products
@@ -51,7 +52,7 @@ BEGIN
           FROM goods_receipts
          WHERE receipt_id = :NEW.receipt_id;
 
-        IF v_status = 1 THEN
+        IF v_status = 1 AND :NEW.status = 1 THEN
             adjust_stock(
                 :NEW.product_id,
                 :NEW.received_qty - :NEW.rejected_qty
@@ -63,7 +64,7 @@ BEGIN
           FROM goods_receipts
          WHERE receipt_id = :OLD.receipt_id;
 
-        IF v_status = 1 THEN
+        IF v_status = 1 AND :OLD.status = 1 THEN
             adjust_stock(
                 :OLD.product_id,
                 -(:OLD.received_qty - :OLD.rejected_qty)
@@ -75,7 +76,7 @@ BEGIN
           FROM goods_receipts
          WHERE receipt_id = :OLD.receipt_id;
 
-        IF v_status = 1 THEN
+        IF v_status = 1 AND :OLD.status = 1 THEN
             adjust_stock(
                 :OLD.product_id,
                 -(:OLD.received_qty - :OLD.rejected_qty)
@@ -87,7 +88,7 @@ BEGIN
           FROM goods_receipts
          WHERE receipt_id = :NEW.receipt_id;
 
-        IF v_status = 1 THEN
+        IF v_status = 1 AND :NEW.status = 1 THEN
             adjust_stock(
                 :NEW.product_id,
                 :NEW.received_qty - :NEW.rejected_qty
