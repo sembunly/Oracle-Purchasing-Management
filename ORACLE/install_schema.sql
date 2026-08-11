@@ -6,25 +6,25 @@ SET DEFINE OFF;
 SET SERVEROUTPUT ON;
 
 PROMPT ===== 1. Creating tables, sequences, constraints, and indexes =====
-@@purchasing_management.sql
+@@002_purchasing_management.sql
 
 PROMPT ===== 2. Creating total and payment triggers =====
-@@business_triggers.sql
+@@003_business_triggers.sql
 
 PROMPT ===== 3. Creating stock triggers =====
-@@trigger_update_stock.sql
+@@004_trigger_update_stock.sql
 
 PROMPT ===== 4. Creating stored procedures =====
-@@sp.sql
+@@005_sp.sql
 
 PROMPT ===== 5. Creating report views =====
-@@views.sql
-@@stock_report.sql
+@@006_views.sql
+@@007_stock_report.sql
 
 PROMPT ===== 6. Loading end-to-end sample data =====
-@@sample_data.sql
+@@008_sample_data.sql
 
 PROMPT ===== 7. Creating application users =====
-@@app_users.sql
+@@009_app_users.sql
 
 PROMPT ===== Installation completed successfully =====

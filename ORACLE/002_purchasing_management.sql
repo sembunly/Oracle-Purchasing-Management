@@ -8,7 +8,7 @@ CREATE TABLE employees (
     email            VARCHAR2(100),
     department       VARCHAR2(100),
     job_title        VARCHAR2(100),
-    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0=INACTIVE, 1=ACTIVE
+    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     created_at       DATE DEFAULT SYSDATE NOT NULL,
     CONSTRAINT uk_employee_code UNIQUE (employee_code),
     CONSTRAINT uk_employee_email UNIQUE (email),
@@ -24,7 +24,7 @@ CREATE TABLE suppliers (
     email            VARCHAR2(100),
     address          VARCHAR2(255),
     tax_number       VARCHAR2(50),
-    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0=INACTIVE, 1=ACTIVE
+    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     created_at       DATE DEFAULT SYSDATE NOT NULL,
     CONSTRAINT uk_supplier_code UNIQUE (supplier_code),
     CONSTRAINT ck_supplier_status CHECK (status IN (0, 1))
@@ -40,7 +40,7 @@ CREATE TABLE products (
     stock_qty              NUMBER(12,2) DEFAULT 0 NOT NULL,
     reorder_level          NUMBER(12,2) DEFAULT 0 NOT NULL,
     preferred_supplier_id  NUMBER,
-    status                 NUMBER(1) DEFAULT 1 NOT NULL, -- 0=INACTIVE, 1=ACTIVE
+    status                 NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     created_at             DATE DEFAULT SYSDATE NOT NULL,
     CONSTRAINT uk_product_code UNIQUE (product_code),
     CONSTRAINT fk_product_supplier FOREIGN KEY (preferred_supplier_id)
@@ -58,7 +58,7 @@ CREATE TABLE purchase_requests (
     requested_by     NUMBER NOT NULL,
     needed_date      DATE,
     purpose          VARCHAR2(500),
-    status           NUMBER(1) DEFAULT 0 NOT NULL, -- 0=DRAFT, 1=PENDING, 2=APPROVED, 3=REJECTED, 4=CANCELLED
+    status           NUMBER(1) DEFAULT 0 NOT NULL, -- 0: DRAFT, 1: PENDING, 2: APPROVED, 3: REJECTED, 4: CANCELLED
     created_at       DATE DEFAULT SYSDATE NOT NULL,
     CONSTRAINT uk_request_no UNIQUE (request_no),
     CONSTRAINT fk_request_employee FOREIGN KEY (requested_by)
@@ -90,7 +90,7 @@ CREATE TABLE purchase_request_approvals (
     request_id       NUMBER NOT NULL,
     approval_level   NUMBER(3) DEFAULT 1 NOT NULL,
     approver_id      NUMBER NOT NULL,
-    decision         NUMBER(1) DEFAULT 0 NOT NULL, -- 0=PENDING, 1=APPROVED, 2=REJECTED
+    decision         NUMBER(1) DEFAULT 0 NOT NULL, -- 0: PENDING, 1: APPROVED, 2: REJECTED
     comments         VARCHAR2(500),
     decision_date    DATE,
     created_at       DATE DEFAULT SYSDATE NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE quotations (
     supplier_id       NUMBER NOT NULL,
     quotation_date    DATE DEFAULT SYSDATE NOT NULL,
     valid_until       DATE,
-    status            NUMBER(1) DEFAULT 0 NOT NULL, -- 0=RECEIVED, 1=SELECTED, 2=REJECTED, 3=EXPIRED
+    status            NUMBER(1) DEFAULT 0 NOT NULL, -- 0: RECEIVED, 1: SELECTED, 2: REJECTED, 3: EXPIRED
     total_amount      NUMBER(14,2) DEFAULT 0 NOT NULL,
     notes             VARCHAR2(500),
     created_at        DATE DEFAULT SYSDATE NOT NULL,
@@ -162,7 +162,7 @@ CREATE TABLE purchase_orders (
     expected_delivery_date  DATE,
     created_by              NUMBER NOT NULL,
     approved_by             NUMBER,
-    status                  NUMBER(1) DEFAULT 0 NOT NULL, -- 0=DRAFT, 1=APPROVED, 2=PARTIALLY_RECEIVED, 3=RECEIVED, 4=CANCELLED, 5=CLOSED
+    status                  NUMBER(1) DEFAULT 0 NOT NULL, -- 0: DRAFT, 1: APPROVED, 2: PARTIALLY_RECEIVED, 3: RECEIVED, 4: CANCELLED, 5: CLOSED
     subtotal_amount         NUMBER(14,2) DEFAULT 0 NOT NULL,
     tax_amount              NUMBER(14,2) DEFAULT 0 NOT NULL,
     total_amount            NUMBER(14,2) DEFAULT 0 NOT NULL,
@@ -216,7 +216,7 @@ CREATE TABLE goods_receipts (
     po_id            NUMBER NOT NULL,
     receipt_date     DATE DEFAULT SYSDATE NOT NULL,
     received_by      NUMBER NOT NULL,
-    status           NUMBER(1) DEFAULT 0 NOT NULL, -- 0=DRAFT, 1=PENDING, 2=APPROVED, 3=REJECTED, 4=CANCELLED
+    status           NUMBER(1) DEFAULT 0 NOT NULL, -- 0: DRAFT, 1: RECEIVED, 2: CANCELLED
     notes            VARCHAR2(500),
     created_at       DATE DEFAULT SYSDATE NOT NULL,
     CONSTRAINT uk_receipt_no UNIQUE (receipt_no),
@@ -257,7 +257,7 @@ CREATE TABLE supplier_invoices (
     tax_amount       NUMBER(14,2) DEFAULT 0 NOT NULL,
     total_amount     NUMBER(14,2) NOT NULL,
     paid_amount      NUMBER(14,2) DEFAULT 0 NOT NULL,
-    status           NUMBER(1) DEFAULT 0 NOT NULL, -- 0=DRAFT, 1=PENDING, 2=APPROVED, 3=REJECTED, 4=CANCELLED
+    status           NUMBER(1) DEFAULT 0 NOT NULL, -- 0: UNPAID, 1: PARTIAL, 2: PAID, 3: CANCELLED
     notes            VARCHAR2(500),
     created_at       DATE DEFAULT SYSDATE NOT NULL,
     CONSTRAINT uk_invoice_no UNIQUE (invoice_no),
@@ -284,7 +284,7 @@ CREATE TABLE payments (
     amount           NUMBER(14,2) NOT NULL,
     payment_method   VARCHAR2(30) NOT NULL,
     reference_no     VARCHAR2(100),
-    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0=INACTIVE, 1=ACTIVE
+    status           NUMBER(1) DEFAULT 1 NOT NULL, -- 0: PENDING, 1: POSTED, 2: VOID
     notes            VARCHAR2(500),
     created_at       DATE DEFAULT SYSDATE NOT NULL,
     CONSTRAINT uk_payment_no UNIQUE (payment_no),
@@ -336,13 +336,13 @@ CREATE INDEX ix_invoice_po             ON supplier_invoices (po_id);
 CREATE INDEX ix_payment_invoice        ON payments (invoice_id);
 
 -- Numeric status code dictionary (stored as NUMBER for compact, indexed values).
-COMMENT ON COLUMN employees.status IS '0=INACTIVE, 1=ACTIVE';
-COMMENT ON COLUMN suppliers.status IS '0=INACTIVE, 1=ACTIVE';
-COMMENT ON COLUMN products.status IS '0=INACTIVE, 1=ACTIVE';
-COMMENT ON COLUMN purchase_requests.status IS '0=DRAFT, 1=PENDING, 2=APPROVED, 3=REJECTED, 4=CANCELLED';
-COMMENT ON COLUMN purchase_request_approvals.decision IS '0=PENDING, 1=APPROVED, 2=REJECTED';
-COMMENT ON COLUMN quotations.status IS '0=RECEIVED, 1=SELECTED, 2=REJECTED, 3=EXPIRED';
-COMMENT ON COLUMN purchase_orders.status IS '0=DRAFT, 1=APPROVED, 2=PARTIALLY_RECEIVED, 3=RECEIVED, 4=CANCELLED, 5=CLOSED';
-COMMENT ON COLUMN goods_receipts.status IS '0=DRAFT, 1=RECEIVED, 2=CANCELLED';
-COMMENT ON COLUMN supplier_invoices.status IS '0=UNPAID, 1=PARTIAL, 2=PAID, 3=CANCELLED';
-COMMENT ON COLUMN payments.status IS '0=PENDING, 1=POSTED, 2=VOID';
+COMMENT ON COLUMN employees.status IS '0: INACTIVE, 1: ACTIVE';
+COMMENT ON COLUMN suppliers.status IS '0: INACTIVE, 1: ACTIVE';
+COMMENT ON COLUMN products.status IS '0: INACTIVE, 1: ACTIVE';
+COMMENT ON COLUMN purchase_requests.status IS '0: DRAFT, 1: PENDING, 2: APPROVED, 3: REJECTED, 4: CANCELLED';
+COMMENT ON COLUMN purchase_request_approvals.decision IS '0: PENDING, 1: APPROVED, 2: REJECTED';
+COMMENT ON COLUMN quotations.status IS '0: RECEIVED, 1: SELECTED, 2: REJECTED, 3: EXPIRED';
+COMMENT ON COLUMN purchase_orders.status IS '0: DRAFT, 1: APPROVED, 2: PARTIALLY_RECEIVED, 3: RECEIVED, 4: CANCELLED, 5: CLOSED';
+COMMENT ON COLUMN goods_receipts.status IS '0: DRAFT, 1: RECEIVED, 2: CANCELLED';
+COMMENT ON COLUMN supplier_invoices.status IS '0: UNPAID, 1: PARTIAL, 2: PAID, 3: CANCELLED';
+COMMENT ON COLUMN payments.status IS '0: PENDING, 1: POSTED, 2: VOID';

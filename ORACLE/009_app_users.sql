@@ -1,5 +1,5 @@
 -- Application users for the Oracle Purchasing Management System
--- Run this script as PURCHASING_USER after purchasing_management.sql.
+-- Run this script as PURCHASING_USER after 002_purchasing_management.sql.
 -- Sample password for the classroom users below is: 1234
 
 SET DEFINE OFF;
@@ -14,7 +14,7 @@ CREATE TABLE app_users (
     username      VARCHAR2(50) NOT NULL UNIQUE,
     password_hash VARCHAR2(64) NOT NULL,
     role_code     VARCHAR2(30) NOT NULL,
-    status        NUMBER(1) DEFAULT 1 NOT NULL,
+    status        NUMBER(1) DEFAULT 1 NOT NULL, -- 0: INACTIVE, 1: ACTIVE
     created_at    TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL,
 
     CONSTRAINT fk_app_user_employee
@@ -125,4 +125,4 @@ PROMPT ===== Application users created =====
 SELECT username, role_code, status
 FROM app_users
 ORDER BY user_id;
-COMMENT ON COLUMN app_users.status IS '0=INACTIVE, 1=ACTIVE';
+COMMENT ON COLUMN app_users.status IS '0: INACTIVE, 1: ACTIVE';
