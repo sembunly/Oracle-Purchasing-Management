@@ -1,0 +1,46 @@
+# Visual Studio
+.vs/
+.vscode/
+*.suo
+*.user
+*.csproj.user
+*.userosscache
+*.sln.docstates
+
+# .NET build output
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+*.dll
+*.exe
+*.pdb
+
+# NuGet/package restore output
+packages/
+*.nupkg
+
+# Local settings and secrets
+.env
+.env.*
+*.local.config
+App.local.config
+*.secrets.json
+*.secret
+
+# Logs and Oracle export files
+*.log
+*.dmp
+*.trc
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+Thumbs.db
+.DS_Store
+
+# README files: requested to keep documentation out of Git tracking.
+# This does not delete or hide the files from Windows Explorer.
+README.md
+**/README.md
