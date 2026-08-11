@@ -6,25 +6,25 @@ SET DEFINE OFF;
 SET SERVEROUTPUT ON;
 
 PROMPT ===== 1. Creating tables, sequences, constraints, and indexes =====
-@@002_purchasing_management.sql
+@C:\Oracle-Ass\ORACLE\002_purchasing_management.sql
 
 PROMPT ===== 2. Creating total and payment triggers =====
-@@003_business_triggers.sql
+@C:\Oracle-Ass\ORACLE\003_business_triggers.sql
 
 PROMPT ===== 3. Creating stock triggers =====
-@@004_trigger_update_stock.sql
+@C:\Oracle-Ass\ORACLE\004_trigger_update_stock.sql
 
 PROMPT ===== 4. Creating stored procedures =====
-@@005_sp.sql
+@C:\Oracle-Ass\ORACLE\005_sp.sql
 
 PROMPT ===== 5. Creating report views =====
-@@006_views.sql
-@@007_stock_report.sql
+@C:\Oracle-Ass\ORACLE\006_views.sql
+@C:\Oracle-Ass\ORACLE\007_stock_report.sql
 
 PROMPT ===== 6. Loading end-to-end sample data =====
-@@008_sample_data.sql
+@C:\Oracle-Ass\ORACLE\008_sample_data.sql
 
 PROMPT ===== 7. Creating application users =====
-@@009_app_users.sql
+@C:\Oracle-Ass\ORACLE\009_app_users.sql
 
-PROMPT ===== Installation completed successfully =====
+PROMPT ===== Installer finished. Verify that no ORA- or SP2- errors were printed above. =====
