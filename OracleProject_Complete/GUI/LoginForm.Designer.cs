@@ -1,6 +1,6 @@
 namespace OracleProject
 {
-    partial class Form1
+    partial class LoginForm
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -213,14 +213,14 @@ namespace OracleProject
             this.lblCopyright.Text = "© 2026 ProcureEase. All rights reserved.";
             this.lblCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
-            // Form1
+            // LoginForm
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(900, 550);
             this.Controls.Add(this.panelMain);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "LoginForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ProcureEase - Login";
             this.panelMain.ResumeLayout(false);

@@ -4,9 +4,9 @@ using System.Windows.Forms;
 
 namespace OracleProject
 {
-    public partial class Form1 : Form
+    public partial class LoginForm : Form
     {
-        public Form1()
+        public LoginForm()
         {
             InitializeComponent();
         }
@@ -53,21 +53,25 @@ namespace OracleProject
                 return;
             }
 
-            string connectionError;
-            if (!OracleDb.TestConnection(txtUsername.Text.Trim(), txtPassword.Text, out connectionError))
+            string displayName;
+            string roleCode;
+            string loginError;
+            if (!OracleDb.AuthenticateAppUser(
+                    txtUsername.Text.Trim(),
+                    txtPassword.Text,
+                    out displayName,
+                    out roleCode,
+                    out loginError))
             {
                 MessageBox.Show(
-                    "Oracle connection failed. Check App.config, Oracle service/PDB, username and password.\n\n"
-                    + connectionError,
-                    "Database Login Error",
+                    "Application login failed. Make sure APP_USERS is installed and the credentials are correct.\n\n"
+                    + loginError,
+                    "Login Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 return;
             }
-
-            // The classroom schema has no password column for application employees;
-            // verify the configured Oracle account, then use the typed name for display.
-            Dashboard dashboard = new Dashboard(txtUsername.Text);
+            Dashboard dashboard = new Dashboard(displayName);
             dashboard.Show();
             this.Hide();
         }

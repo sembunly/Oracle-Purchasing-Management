@@ -41,15 +41,15 @@ LEFT JOIN (
       FROM goods_receipts gr
       JOIN goods_receipt_items gri
         ON gri.receipt_id = gr.receipt_id
-     WHERE gr.status = 'RECEIVED'
+     WHERE gr.status = 1
      GROUP BY gr.po_id
 ) receipts
   ON receipts.po_id = po.po_id
 LEFT JOIN (
     SELECT po_id,
-           SUM(CASE WHEN status <> 'CANCELLED' THEN total_amount ELSE 0 END)
+           SUM(CASE WHEN status <> 3 THEN total_amount ELSE 0 END)
                AS invoiced_amount,
-           SUM(CASE WHEN status <> 'CANCELLED' THEN paid_amount ELSE 0 END)
+           SUM(CASE WHEN status <> 3 THEN paid_amount ELSE 0 END)
                AS paid_amount
       FROM supplier_invoices
      GROUP BY po_id
@@ -74,7 +74,7 @@ JOIN employees requester
   ON requester.employee_id = pr.requested_by
 JOIN employees approver
   ON approver.employee_id = a.approver_id
-WHERE a.decision = 'PENDING';
+WHERE a.decision = 0;
 
 CREATE OR REPLACE VIEW vw_receiving_report AS
 SELECT
@@ -101,7 +101,7 @@ LEFT JOIN (
       FROM goods_receipts gr
       JOIN goods_receipt_items gri
         ON gri.receipt_id = gr.receipt_id
-     WHERE gr.status = 'RECEIVED'
+     WHERE gr.status = 1
      GROUP BY gr.po_id, gri.product_id
 ) r
   ON r.po_id = poi.po_id
@@ -119,7 +119,7 @@ SELECT
     i.total_amount - i.paid_amount AS balance_amount,
     i.status,
     CASE
-        WHEN i.status IN ('PAID', 'CANCELLED') THEN 0
+        WHEN i.status IN (2, 3) THEN 0
         ELSE GREATEST(0, TRUNC(SYSDATE) - TRUNC(i.due_date))
     END AS days_overdue
 FROM supplier_invoices i
@@ -134,11 +134,11 @@ SELECT
     s.supplier_name,
     COUNT(DISTINCT po.po_id) AS total_orders,
     NVL(SUM(po.total_amount), 0) AS total_order_amount,
-    COUNT(DISTINCT CASE WHEN po.status IN ('RECEIVED', 'CLOSED') THEN po.po_id END)
+    COUNT(DISTINCT CASE WHEN po.status IN (3, 5) THEN po.po_id END)
         AS completed_orders,
     MAX(po.po_date) AS last_order_date
 FROM suppliers s
 LEFT JOIN purchase_orders po
   ON po.supplier_id = s.supplier_id
- AND po.status <> 'CANCELLED'
+ AND po.status <> 4
 GROUP BY s.supplier_code, s.supplier_name;

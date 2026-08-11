@@ -11,10 +11,10 @@ CREATE OR REPLACE PROCEDURE sp_approve_request (
     v_request_state purchase_requests.status%TYPE;
     v_pending_count NUMBER;
 BEGIN
-    v_decision := UPPER(TRIM(p_decision));
+    v_decision := p_decision;
 
-    IF v_decision IS NULL OR v_decision NOT IN ('APPROVED', 'REJECTED') THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Decision must be APPROVED or REJECTED.');
+    IF v_decision IS NULL OR v_decision NOT IN (1, 2) THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Decision must be 1 (APPROVED) or 2 (REJECTED).');
     END IF;
 
     SELECT status
@@ -23,8 +23,8 @@ BEGIN
      WHERE request_id = p_request_id
        FOR UPDATE;
 
-    IF v_request_state <> 'PENDING' THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Only a PENDING request can be approved.');
+    IF v_request_state <> 1 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Only a request with status 1 (PENDING) can be approved.');
     END IF;
 
     UPDATE purchase_request_approvals
@@ -33,26 +33,26 @@ BEGIN
            decision_date = SYSDATE
      WHERE request_id = p_request_id
        AND approver_id = p_approver_id
-       AND decision = 'PENDING';
+       AND decision = 0;
 
     IF SQL%ROWCOUNT = 0 THEN
         RAISE_APPLICATION_ERROR(-20003, 'No pending approval was assigned to this approver.');
     END IF;
 
-    IF v_decision = 'REJECTED' THEN
+    IF v_decision = 2 THEN
         UPDATE purchase_requests
-           SET status = 'REJECTED'
+           SET status = 3
          WHERE request_id = p_request_id;
     ELSE
         SELECT COUNT(*)
           INTO v_pending_count
           FROM purchase_request_approvals
          WHERE request_id = p_request_id
-           AND decision = 'PENDING';
+           AND decision = 0;
 
         IF v_pending_count = 0 THEN
             UPDATE purchase_requests
-               SET status = 'APPROVED'
+               SET status = 2
              WHERE request_id = p_request_id;
         END IF;
     END IF;
@@ -80,8 +80,8 @@ BEGIN
       FROM purchase_requests
      WHERE request_id = p_request_id;
 
-    IF v_request_status <> 'APPROVED' THEN
-        RAISE_APPLICATION_ERROR(-20011, 'Purchase request must be APPROVED first.');
+    IF v_request_status <> 2 THEN
+        RAISE_APPLICATION_ERROR(-20011, 'Purchase request must have status 2 (APPROVED) first.');
     END IF;
 
     SELECT supplier_id, status
@@ -90,8 +90,8 @@ BEGIN
      WHERE quotation_id = p_quotation_id
        AND request_id = p_request_id;
 
-    IF v_quote_status <> 'SELECTED' THEN
-        RAISE_APPLICATION_ERROR(-20012, 'Quotation must have SELECTED status.');
+    IF v_quote_status <> 1 THEN
+        RAISE_APPLICATION_ERROR(-20012, 'Quotation must have status 1 (SELECTED).');
     END IF;
 
     IF p_tax_amount < 0 THEN
@@ -106,7 +106,7 @@ BEGIN
         subtotal_amount, tax_amount, total_amount
     ) VALUES (
         p_po_id, p_po_no, p_request_id, p_quotation_id, v_supplier_id,
-        SYSDATE, p_expected_delivery_date, p_created_by, 'DRAFT',
+        SYSDATE, p_expected_delivery_date, p_created_by, 0,
         0, p_tax_amount, p_tax_amount
     );
 
@@ -148,8 +148,8 @@ BEGIN
      WHERE invoice_id = p_invoice_id
        FOR UPDATE;
 
-    IF v_status = 'CANCELLED' THEN
-        RAISE_APPLICATION_ERROR(-20021, 'Cannot pay a cancelled invoice.');
+    IF v_status = 3 THEN
+        RAISE_APPLICATION_ERROR(-20021, 'Cannot pay an invoice with status 3 (CANCELLED).');
     END IF;
 
     IF p_amount <= 0 THEN
@@ -167,7 +167,7 @@ BEGIN
         amount, payment_method, reference_no, status
     ) VALUES (
         p_payment_id, p_payment_no, p_invoice_id, SYSDATE,
-        p_amount, UPPER(TRIM(p_payment_method)), p_reference_no, 'POSTED'
+        p_amount, UPPER(TRIM(p_payment_method)), p_reference_no, 1
     );
 EXCEPTION
     WHEN NO_DATA_FOUND THEN

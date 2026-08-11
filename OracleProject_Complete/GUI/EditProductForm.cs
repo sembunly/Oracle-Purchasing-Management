@@ -55,8 +55,7 @@ namespace OracleProject
             txtUnitPrice.Text = Convert.ToString(row["UNIT_PRICE"]);
             decimal stock = Convert.ToDecimal(row["STOCK_QTY"]);
             numQuantity.Value = Math.Max(numQuantity.Minimum, Math.Min(numQuantity.Maximum, stock));
-            chkActive.Checked = string.Equals(Convert.ToString(row["STATUS"]), "ACTIVE",
-                StringComparison.OrdinalIgnoreCase);
+            chkActive.Checked = Convert.ToInt32(row["STATUS"]) == 1;
 
             // ensure mirrored controls reflect the loaded data
             PopulateExternalFieldsFromInternal();

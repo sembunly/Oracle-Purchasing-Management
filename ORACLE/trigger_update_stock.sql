@@ -7,9 +7,9 @@ FOR EACH ROW
 DECLARE
     v_multiplier NUMBER;
 BEGIN
-    IF :OLD.status <> 'RECEIVED' AND :NEW.status = 'RECEIVED' THEN
+    IF :OLD.status <> 1 AND :NEW.status = 1 THEN
         v_multiplier := 1;
-    ELSIF :OLD.status = 'RECEIVED' AND :NEW.status <> 'RECEIVED' THEN
+    ELSIF :OLD.status = 1 AND :NEW.status <> 1 THEN
         v_multiplier := -1;
     ELSE
         RETURN;
@@ -51,7 +51,7 @@ BEGIN
           FROM goods_receipts
          WHERE receipt_id = :NEW.receipt_id;
 
-        IF v_status = 'RECEIVED' THEN
+        IF v_status = 1 THEN
             adjust_stock(
                 :NEW.product_id,
                 :NEW.received_qty - :NEW.rejected_qty
@@ -63,7 +63,7 @@ BEGIN
           FROM goods_receipts
          WHERE receipt_id = :OLD.receipt_id;
 
-        IF v_status = 'RECEIVED' THEN
+        IF v_status = 1 THEN
             adjust_stock(
                 :OLD.product_id,
                 -(:OLD.received_qty - :OLD.rejected_qty)
@@ -75,7 +75,7 @@ BEGIN
           FROM goods_receipts
          WHERE receipt_id = :OLD.receipt_id;
 
-        IF v_status = 'RECEIVED' THEN
+        IF v_status = 1 THEN
             adjust_stock(
                 :OLD.product_id,
                 -(:OLD.received_qty - :OLD.rejected_qty)
@@ -87,7 +87,7 @@ BEGIN
           FROM goods_receipts
          WHERE receipt_id = :NEW.receipt_id;
 
-        IF v_status = 'RECEIVED' THEN
+        IF v_status = 1 THEN
             adjust_stock(
                 :NEW.product_id,
                 :NEW.received_qty - :NEW.rejected_qty

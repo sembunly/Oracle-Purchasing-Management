@@ -97,7 +97,7 @@ namespace OracleProject
             this.lblStatus.Text = "Status:";
 
             this.cmbStatus.FormattingEnabled = true;
-            this.cmbStatus.Items.AddRange(new object[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" });
+            this.cmbStatus.Items.AddRange(new object[] { "DRAFT", "APPROVED", "PARTIALLY_RECEIVED", "RECEIVED", "CANCELLED", "CLOSED" });
             this.cmbStatus.Location = new System.Drawing.Point(100, 132);
             this.cmbStatus.Name = "cmbStatus";
             this.cmbStatus.Size = new System.Drawing.Size(250, 21);

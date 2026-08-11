@@ -58,8 +58,8 @@ namespace OracleProject
                        q.total_amount
                   FROM quotations q
                   JOIN suppliers s ON s.supplier_id = q.supplier_id
-                 WHERE q.status = 'SELECTED'
-                   AND s.status = 'ACTIVE'
+                 WHERE q.status = 1
+                   AND s.status = 1
                  ORDER BY q.quotation_date DESC";
 
             DataTable quotes = OracleDb.Query(sql);

@@ -53,8 +53,7 @@ namespace OracleProject
             txtPhone.Text = Convert.ToString(row["PHONE"]);
             txtAddress.Text = Convert.ToString(row["ADDRESS"]);
             numRating.Value = 5;
-            chkActive.Checked = string.Equals(Convert.ToString(row["STATUS"]), "ACTIVE",
-                StringComparison.OrdinalIgnoreCase);
+            chkActive.Checked = Convert.ToInt32(row["STATUS"]) == 1;
 
             // Keep external aliases in sync
             if (cmbStatus != null)

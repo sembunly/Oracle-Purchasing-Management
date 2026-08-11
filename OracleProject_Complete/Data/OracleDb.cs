@@ -34,6 +34,46 @@ namespace OracleProject
             return connection;
         }
 
+        internal static bool AuthenticateAppUser(
+            string username,
+            string password,
+            out string displayName,
+            out string roleCode,
+            out string error)
+        {
+            displayName = null;
+            roleCode = null;
+
+            try
+            {
+                DataTable users = Query(@"
+                    SELECT e.full_name, u.role_code
+                    FROM app_users u
+                    JOIN employees e ON e.employee_id = u.employee_id
+                    WHERE u.username = :username
+                      AND u.password_hash = RAWTOHEX(STANDARD_HASH(:password, 'SHA256'))
+                      AND u.status = 1
+                      AND e.status = 1",
+                    Parameter("username", username),
+                    Parameter("password", password));
+
+                if (users.Rows.Count == 0)
+                {
+                    error = "Invalid application username or password.";
+                    return false;
+                }
+
+                displayName = Convert.ToString(users.Rows[0]["FULL_NAME"]);
+                roleCode = Convert.ToString(users.Rows[0]["ROLE_CODE"]);
+                error = null;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+        }
         internal static bool TestConnection(out string error)
         {
             try

@@ -37,23 +37,23 @@ BEGIN
                SELECT NVL(SUM(p.amount), 0)
                  FROM payments p
                 WHERE p.invoice_id = i.invoice_id
-                  AND p.status = 'POSTED'
+                  AND p.status = 1
            ),
            status = CASE
                WHEN (
                    SELECT NVL(SUM(p.amount), 0)
                      FROM payments p
                     WHERE p.invoice_id = i.invoice_id
-                      AND p.status = 'POSTED'
-               ) = 0 THEN 'UNPAID'
+                      AND p.status = 1
+               ) = 0 THEN 0
                WHEN (
                    SELECT NVL(SUM(p.amount), 0)
                      FROM payments p
                     WHERE p.invoice_id = i.invoice_id
-                      AND p.status = 'POSTED'
-               ) >= i.total_amount THEN 'PAID'
-               ELSE 'PARTIAL'
+                      AND p.status = 1
+               ) >= i.total_amount THEN 2
+               ELSE 1
            END
-     WHERE i.status <> 'CANCELLED';
+     WHERE i.status <> 3;
 END;
 /

@@ -24,4 +24,7 @@ PROMPT ===== 5. Creating report views =====
 PROMPT ===== 6. Loading end-to-end sample data =====
 @@sample_data.sql
 
+PROMPT ===== 7. Creating application users =====
+@@app_users.sql
+
 PROMPT ===== Installation completed successfully =====

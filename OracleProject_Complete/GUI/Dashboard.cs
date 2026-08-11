@@ -261,7 +261,7 @@ namespace OracleProject
         private void CreatePurchaseOrder(NewOrderForm form)
         {
             object employee = OracleDb.Scalar(
-                "SELECT employee_id FROM employees WHERE status = 'ACTIVE' AND ROWNUM = 1");
+                "SELECT employee_id FROM employees WHERE status = 1 AND ROWNUM = 1");
             if (employee == null || employee == DBNull.Value)
                 throw new InvalidOperationException("No active employee exists for PO creation.");
 
@@ -317,7 +317,7 @@ namespace OracleProject
                 form.txtSubtotal.Text = Convert.ToString(dgvOrders.SelectedRows[0].Cells[5].Value);
                 form.txtTax.Text = Convert.ToString(dgvOrders.SelectedRows[0].Cells[6].Value);
                 form.txtTotal.Text = Convert.ToString(dgvOrders.SelectedRows[0].Cells[7].Value);
-                form.cmbStatus.Text = Convert.ToString(dgvOrders.SelectedRows[0].Cells[8].Value);
+                form.cmbStatus.Text = PurchaseOrderStatusText(dgvOrders.SelectedRows[0].Cells[8].Value);
 
                 if (form.ShowDialog() != DialogResult.OK)
                     return;
@@ -329,7 +329,7 @@ namespace OracleProject
                            SET expected_delivery_date = :expected_date,
                                tax_amount = :tax_amount,
                                total_amount = subtotal_amount + :tax_amount,
-                               status = UPPER(:status)
+                               status = CASE UPPER(:status) WHEN 'ACTIVE' THEN 1 WHEN 'INACTIVE' THEN 0 WHEN 'DRAFT' THEN 0 WHEN 'APPROVED' THEN 1 WHEN 'PARTIALLY_RECEIVED' THEN 2 WHEN 'RECEIVED' THEN 3 WHEN 'CANCELLED' THEN 4 WHEN 'CLOSED' THEN 5 ELSE status END
                          WHERE po_no = :po_no",
                         OracleDb.Parameter("expected_date", form.ExpectedDelivery),
                         OracleDb.Parameter("tax_amount", form.Tax),
@@ -365,7 +365,7 @@ namespace OracleProject
             try
             {
                 OracleDb.Execute(
-                    "UPDATE purchase_orders SET status = 'CANCELLED' WHERE po_no = :po_no",
+                    "UPDATE purchase_orders SET status = 4 WHERE po_no = :po_no",
                     OracleDb.Parameter("po_no", poNo));
                 ReloadAfterChange();
             }
@@ -396,7 +396,7 @@ namespace OracleProject
                             supplier_seq.NEXTVAL,
                             'SUP-' || TO_CHAR(supplier_seq.CURRVAL),
                             :supplier_name, :contact_person, :phone, :email,
-                            :address, UPPER(:status)
+                            :address, CASE UPPER(:status) WHEN 'ACTIVE' THEN 1 ELSE 0 END
                         )",
                         OracleDb.Parameter("supplier_name", form.SupplierName),
                         OracleDb.Parameter("contact_person", form.ContactPerson),
@@ -434,7 +434,7 @@ namespace OracleProject
                 form.txtEmail.Text = Convert.ToString(row.Cells[3].Value);
                 form.txtPhone.Text = Convert.ToString(row.Cells[4].Value);
                 form.txtCity.Text = Convert.ToString(row.Cells[5].Value);
-                form.cmbStatus.Text = Convert.ToString(row.Cells[10].Value);
+                form.cmbStatus.Text = Convert.ToInt32(row.Cells[10].Value) == 1 ? "Active" : "Inactive";
 
                 if (form.ShowDialog() != DialogResult.OK)
                     return;
@@ -448,7 +448,7 @@ namespace OracleProject
                                email = :email,
                                phone = :phone,
                                address = :address,
-                               status = UPPER(:status)
+                               status = CASE UPPER(:status) WHEN 'ACTIVE' THEN 1 WHEN 'INACTIVE' THEN 0 WHEN 'DRAFT' THEN 0 WHEN 'APPROVED' THEN 1 WHEN 'PARTIALLY_RECEIVED' THEN 2 WHEN 'RECEIVED' THEN 3 WHEN 'CANCELLED' THEN 4 WHEN 'CLOSED' THEN 5 ELSE status END
                          WHERE supplier_code = :supplier_code",
                         OracleDb.Parameter("supplier_name", form.SupplierName),
                         OracleDb.Parameter("contact_person", form.ContactPerson),
@@ -484,7 +484,7 @@ namespace OracleProject
             try
             {
                 OracleDb.Execute(
-                    "UPDATE suppliers SET status = 'INACTIVE' WHERE supplier_code = :supplier_code",
+                    "UPDATE suppliers SET status = 0 WHERE supplier_code = :supplier_code",
                     OracleDb.Parameter("supplier_code", code));
                 ReloadAfterChange();
             }
@@ -513,7 +513,7 @@ namespace OracleProject
                             unit, unit_price, stock_qty, status
                         ) VALUES (
                             product_seq.NEXTVAL, :product_code, :product_name,
-                            :category, 'UNIT', :unit_price, :stock_qty, UPPER(:status)
+                            :category, 'UNIT', :unit_price, :stock_qty, CASE UPPER(:status) WHEN 'ACTIVE' THEN 1 ELSE 0 END
                         )",
                         OracleDb.Parameter("product_code", form.SKU),
                         OracleDb.Parameter("product_name", form.ProductName),
@@ -572,7 +572,7 @@ namespace OracleProject
                                category = :category,
                                unit_price = :unit_price,
                                stock_qty = :stock_qty,
-                               status = UPPER(:status)
+                               status = CASE UPPER(:status) WHEN 'ACTIVE' THEN 1 WHEN 'INACTIVE' THEN 0 WHEN 'DRAFT' THEN 0 WHEN 'APPROVED' THEN 1 WHEN 'PARTIALLY_RECEIVED' THEN 2 WHEN 'RECEIVED' THEN 3 WHEN 'CANCELLED' THEN 4 WHEN 'CLOSED' THEN 5 ELSE status END
                          WHERE product_code = :product_code",
                         OracleDb.Parameter("product_name", form.ProductName),
                         OracleDb.Parameter("category", form.Category),
@@ -607,7 +607,7 @@ namespace OracleProject
             try
             {
                 OracleDb.Execute(
-                    "UPDATE products SET status = 'INACTIVE' WHERE product_code = :product_code",
+                    "UPDATE products SET status = 0 WHERE product_code = :product_code",
                     OracleDb.Parameter("product_code", code));
                 ReloadAfterChange();
             }
@@ -621,6 +621,23 @@ namespace OracleProject
         // =========================================================
         // GRID FORMATTING
         // =========================================================
+        private static string PurchaseOrderStatusText(object value)
+        {
+            int code;
+            if (!int.TryParse(Convert.ToString(value), out code))
+                return Convert.ToString(value);
+
+            switch (code)
+            {
+                case 0: return "DRAFT";
+                case 1: return "APPROVED";
+                case 2: return "PARTIALLY_RECEIVED";
+                case 3: return "RECEIVED";
+                case 4: return "CANCELLED";
+                case 5: return "CLOSED";
+                default: return Convert.ToString(value);
+            }
+        }
         private void ApplyStatusColor(DataGridView grid, int statusColumn)
         {
             grid.CellFormatting += (sender, e) =>
@@ -630,20 +647,24 @@ namespace OracleProject
 
                 switch (Convert.ToString(e.Value).ToUpperInvariant())
                 {
+                    case "1":
                     case "APPROVED":
                     case "ACTIVE":
                     case "PAID":
                         e.CellStyle.ForeColor = Color.FromArgb(39, 174, 96);
                         break;
+                    case "0":
                     case "PENDING":
                     case "PARTIAL":
                     case "PARTIALLY_RECEIVED":
                         e.CellStyle.ForeColor = Color.FromArgb(230, 126, 34);
                         break;
+                    case "3":
                     case "RECEIVED":
                     case "CLOSED":
                         e.CellStyle.ForeColor = Color.FromArgb(49, 130, 206);
                         break;
+                    case "4":
                     case "CANCELLED":
                     case "INACTIVE":
                     case "REJECTED":
@@ -734,7 +755,7 @@ namespace OracleProject
                               JOIN products p ON p.product_id = poi.product_id
                              WHERE po.po_date >= :from_date
                                AND po.po_date < :to_date
-                               AND po.status <> 'CANCELLED'
+                               AND po.status <> 4
                              GROUP BY p.category
                              ORDER BY SUM(poi.subtotal) DESC",
                             OracleDb.Parameter("from_date", from),
@@ -746,12 +767,12 @@ namespace OracleProject
                         table = OracleDb.Query(@"
                             SELECT TO_CHAR(TRUNC(po_date, 'MM'), 'FMMonth YYYY') AS ""Month"",
                                    COUNT(*) AS ""No. of POs"",
-                                   SUM(CASE WHEN status = 'APPROVED' THEN 1 ELSE 0 END) AS ""Approved"",
+                                   SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS ""Approved"",
                                    SUM(total_amount) AS ""Total Spend""
                               FROM purchase_orders
                              WHERE po_date >= :from_date
                                AND po_date < :to_date
-                               AND status <> 'CANCELLED'
+                               AND status <> 4
                              GROUP BY TRUNC(po_date, 'MM')
                              ORDER BY TRUNC(po_date, 'MM')",
                             OracleDb.Parameter("from_date", from),
@@ -771,7 +792,7 @@ namespace OracleProject
                               JOIN purchase_requests pr ON pr.request_id = a.request_id
                               JOIN employees requester ON requester.employee_id = pr.requested_by
                               LEFT JOIN purchase_request_items pri ON pri.request_id = pr.request_id
-                             WHERE a.decision = 'PENDING'
+                             WHERE a.decision = 0
                                AND pr.request_date >= :from_date
                                AND pr.request_date < :to_date
                              GROUP BY pr.request_no, requester.full_name, pr.request_date, a.decision

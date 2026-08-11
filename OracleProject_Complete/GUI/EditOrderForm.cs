@@ -20,7 +20,7 @@ namespace OracleProject
         {
             cmbSupplier.Items.Clear();
             DataTable table = OracleDb.Query(
-                "SELECT supplier_name FROM suppliers WHERE status = 'ACTIVE' ORDER BY supplier_name");
+                "SELECT supplier_name FROM suppliers WHERE status = 1 ORDER BY supplier_name");
             foreach (DataRow row in table.Rows)
                 cmbSupplier.Items.Add(Convert.ToString(row["SUPPLIER_NAME"]));
         }
