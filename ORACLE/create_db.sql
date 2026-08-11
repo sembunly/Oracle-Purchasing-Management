@@ -1,8 +1,10 @@
 -- Run this file as SYSTEM (or another DBA user) while connected to a PDB,
 -- for example XEPDB1 or FREEPDB1. Do not run it in CDB$ROOT.
 
+ALTER SESSION SET "_ORACLE_SCRIPT" = true;
+
 CREATE USER purchasing_user
-IDENTIFIED BY 0000
+IDENTIFIED BY "0000"
 DEFAULT TABLESPACE users
 TEMPORARY TABLESPACE temp
 QUOTA 100M ON users;
