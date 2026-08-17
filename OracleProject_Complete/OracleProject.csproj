@@ -55,6 +55,36 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\OracleDb.cs" />
+    <Compile Include="GUI\Base\ComboItem.cs" />
+    <Compile Include="GUI\Base\DashboardContext.cs" />
+    <Compile Include="GUI\Base\DashboardTabBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Base\DashboardUiHelper.cs" />
+    <Compile Include="GUI\Tabs\OverviewTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Tabs\OrdersTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Tabs\SuppliersTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Tabs\ProductsTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Tabs\ReportsTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Tabs\UsersTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Tabs\Form001Tab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Tabs\SettingsTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="GUI\Dashboard.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -108,6 +138,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="GUI\Base\DashboardTabBase.resx">
+      <DependentUpon>DashboardTabBase.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Dashboard.resx">
       <DependentUpon>Dashboard.cs</DependentUpon>
     </EmbeddedResource>
@@ -132,6 +165,9 @@
     <EmbeddedResource Include="GUI\EditProductForm.resx">
       <DependentUpon>EditProductForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Tabs\OverviewTab.resx">
+      <DependentUpon>OverviewTab.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -154,5 +190,4 @@
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
 </Project>
