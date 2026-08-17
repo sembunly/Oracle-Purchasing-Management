@@ -104,15 +104,16 @@ namespace OracleProject
         {
             var btnRefresh = new Button
             {
-                Anchor = AnchorStyles.Top | AnchorStyles.Left,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 BackColor = Color.FromArgb(107, 114, 128),
                 Cursor = Cursors.Hand,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(650, 32),
-                Size = new Size(110, 38),
-                Text = "Refresh",
+                Location = new Point(1000, 32),
+                Size = new Size(120, 40),
+                Text = "🔄 Refresh",
+                TextAlign = ContentAlignment.MiddleCenter,
                 UseVisualStyleBackColor = false
             };
             btnRefresh.FlatAppearance.BorderSize = 0;

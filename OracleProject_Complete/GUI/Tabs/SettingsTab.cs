@@ -1,4 +1,3 @@
-using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -15,17 +14,21 @@ namespace OracleProject
         {
             TabTitle = "Settings";
             RequiredPermission = "SETTINGS_VIEW";
-            InitializeComponent();
+            //InitializeComponent();
         }
 
-        private void InitializeComponent()
-        {
-            BackColor = Color.FromArgb(247, 250, 252);
-            Dock = DockStyle.Fill;
+        //private void InitializeComponent()
+        //{
+        //    this.SuspendLayout();
+        //    // 
+        //    // SettingsTab
+        //    // 
+        //    this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+        //    this.Name = "SettingsTab";
+        //    this.Size = new System.Drawing.Size(1231, 652);
+        //    this.ResumeLayout(false);
 
-            // The PermissionForm will be embedded here
-            // It gets created in OnActivated when we have Context
-        }
+        //}
 
         public override void ApplyPermissions()
         {
@@ -44,7 +47,7 @@ namespace OracleProject
             permissionForm.Dock = DockStyle.Fill;
             permissionForm.TopLevel = false;
             permissionForm.FormBorderStyle = FormBorderStyle.None;
-            
+
             Controls.Clear();
             Controls.Add(permissionForm);
             permissionForm.Show();
